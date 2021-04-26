@@ -12,7 +12,6 @@ REQUIREMENTS_TXT = $(REQUIREMENTS_IN:.in=.txt)
 
 # public interface
 
-
 # depend on this to ensure you have an up to date venv automatically
 .PHONY: venv
 venv: venv/ready
@@ -39,17 +38,17 @@ venv-lint: venv/ready
 # implementation rules, not meant to be invoked directly
 
 # Create an up-to-date venv with the latest versions
-# Note: currently this will not remove packages, you will to to clean first
+# Note: currently this will not remove packages, you will to clean first
 venv/ready: venv/basic $(REQUIREMENTS_TXT)
 	venv/bin/pip install --upgrade $(addprefix -r , $(REQUIREMENTS_TXT))
 	touch $@
 
 # note: we do not explicitly depend on venv/basic here, or else when creating
 # a venv, .txt files are always regenerated, which is undesirable. Instead, we 
-# ensure it has been create manually in the rules.
+# ensure it has been created manually in the target rules.
 %.txt: %.in
-	test -d venv || $(MAKE) venv/basic
-	test -x venv/bin/pip-compile || venv/bin/pip install pip-tools toml
+	test -x venv/bin/pip-compile || $(MAKE) venv/basic
+	venv/bin/pip install pip-tools toml
 	venv/bin/pip-compile $<
 
 venv/basic:
@@ -62,3 +61,4 @@ venv/basic:
 .PHONY: venv-update
 venv-update:
 	echo wget https://github.com/path/to/current/venv.mk $(THIS_MAKEFILE)
+	grep -q 'venv' .gitignore 2>/dev/null || echo 'venv' >> .gitignore
